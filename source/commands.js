@@ -2,25 +2,6 @@
 "use strict";
 
 var commands = {
-	help : function ( args ) {
-		if ( args && args.length ) {
-
-			var cmd = bot.getCommand( args );
-			if ( cmd.error ) {
-				return cmd.error;
-			}
-
-			var desc = cmd.description || 'No info is available';
-
-			return args + ': ' + desc;
-		}
-
-		return (
-			'https://github.com/Zirak/SO-ChatBot/wiki/' +
-				'Interacting-with-the-bot'
-		);
-	},
-
 	listen : function ( msg ) {
 		return bot.callListeners( msg ) || bot.giveUpMessage( msg );
 	},
@@ -193,94 +174,7 @@ var commands = {
 	},
 
 	jquery : function jquery ( args ) {
-		//check to see if more than one thing is requested
-		var parsed = args.parse( true );
-		if ( parsed.length > 1 ) {
-			return parsed.map( jquery ).join( ' ' );
-		}
-
-		var props = args.trim().replace( /^\$/, 'jQuery' ),
-
-			parts = props.split( '.' ), exists = false,
-			url = props, msg;
-		//parts will contain two likely components, depending on the input
-		// jQuery.fn.prop -  parts[0] = jQuery, parts[1] = prop
-		// jQuery.prop    -  parts[0] = jQuery, parts[1] = prop
-		// prop           -  parts[0] = prop
-		//
-		//jQuery API urls works like this:
-		// if it's on the jQuery object, then the url is /jQuery.property
-		// if it's on the proto, then the url is /property
-		//
-		//so, the mapping goes like this:
-		// jQuery.fn.prop => prop
-		// jQuery.prop    => jQuery.prop if it's on jQuery
-		// prop           => prop if it's on jQuery.prototype,
-		//                     jQuery.prop if it's on jQuery
-
-		bot.log( props, parts, '/jquery input' );
-
-		//user gave something like jQuery.fn.prop, turn that to just prop
-		// jQuery.fn.prop => prop
-		if ( parts.length === 3 ) {
-			parts = [ parts[2] ];
-		}
-
-		//check to see if it's a property on the jQuery object itself
-		// jQuery.prop => jQuery.prop
-		if ( parts[0] === 'jQuery' && jQuery[parts[1]] ) {
-			exists = true;
-		}
-
-		//user wants something on the prototype?
-		// prop => prop
-		else if ( parts.length === 1 && jQuery.prototype[parts[0]] ) {
-			url = parts[ 0 ];
-			exists = true;
-		}
-
-		//user just wanted a property? maybe.
-		// prop => jQuery.prop
-		else if ( jQuery[parts[0]] ) {
-			url = 'jQuery.' + parts[0];
-			exists = true;
-		}
-
-		if ( exists ) {
-			msg = 'http://api.jquery.com/' + url;
-		}
-		else {
-			msg = 'http://api.jquery.com/?s=' + encodeURIComponent( args );
-		}
-		bot.log( msg, '/jquery link' );
-
-		return msg;
-	},
-
-	choose : function ( args ) {
-		var opts = args.parse().filter( conjunctions ),
-			len = opts.length;
-
-		bot.log( opts, '/choose input' );
-
-		//5% chance to get a "none-of-the-above"
-		if ( Math.random() < 0.05 ) {
-			return len === 2 ? 'Neither' : 'None of the above';
-		}
-		//5% chance to get "all-of-the-above"
-		else if ( Math.random() < 0.05 ) {
-			return len === 2 ? 'Both!' : 'All of the above';
-		}
-
-		return opts[ Math.floor(Math.random() * len) ];
-
-		//TODO: add support for words like "and", e.g.
-		// skip and jump or cry and die
-		//  =>
-		// "skip and jump", "cry and die"
-		function conjunctions ( word ) {
-			return word !== 'or';
-		}
+		return '[GTFO](http://chat.stackoverflow.com/rooms/17/javascript)';
 	},
 
 	user : function ( args ) {
@@ -400,36 +294,6 @@ return function ( args, cb ) {
 };
 }());
 commands.define.async = true;
-
-//cb is for internal usage by other commands/listeners
-commands.norris = function ( args, cb ) {
-	var chucky = 'http://api.icndb.com/jokes/random';
-
-	IO.jsonp({
-		url : chucky,
-		fun : finishCall,
-		jsonpName : 'callback'
-	});
-
-	function finishCall ( resp ) {
-		var msg;
-
-		if ( resp.type !== 'success' ) {
-			msg = 'Chuck Norris is too awesome for this API. Try again.';
-		}
-		else {
-			msg = IO.decodehtmlEntities( resp.value.joke );
-		}
-
-		if ( cb && cb.call ) {
-			cb( msg );
-		}
-		else {
-			args.reply( msg );
-		}
-	}
-};
-commands.norris.async = true;
 
 //cb is for internal blah blah blah
 commands.urban = (function () {
@@ -621,6 +485,7 @@ return function ( args ) {
 	cmdName = cmdName.toLowerCase();
 	cmd = bot.getCommand( cmdName );
 	if ( cmd.error ) {
+        return;
 		return cmd.error;
 	}
 
