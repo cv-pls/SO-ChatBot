@@ -2,7 +2,13 @@
 "use strict";
 
 var bot = window.bot = {
-	invocationPattern : '!!',
+	invocationPattern : 'bot',
+
+	// some custom invocation patterns to ease sending commands
+    // these shortcuts will be replaced by invocationPattern/value
+	customInvocationPatterns: {
+		'man': 'quickref'
+	},
 
 	commandRegex : /^\/\s*([\w\-]+)(?:\s(.+))?$/,
 	commands : {}, //will be filled as needed
@@ -17,6 +23,8 @@ var bot = window.bot = {
 	users : users, //the chat has gracefully granted us a global users variable
 
 	parseMessage : function ( msgObj ) {
+		this.preParseMessage( msgObj );
+
 		if ( !this.validateMessage(msgObj) ) {
 			bot.log( msgObj, 'parseMessage invalid' );
 			return;
@@ -142,6 +150,27 @@ var bot = window.bot = {
 
 		if ( res ) {
 			msg.reply( res );
+		}
+	},
+
+	// hacked in custom invocations
+	// if you want to complain about this hack please fill out the appropriate form
+	// and send it to SO support or just ping a mod. bitches like to be pinged
+    // if you are Zirak and you see what I have done to your thing... I'm sorry
+	preParseMessage: function ( msgObj ) {
+		var msg = msgObj.content.trim();
+
+		for (var key in this.customInvocationPatterns) {
+			if (!this.customInvocationPatterns.hasOwnProperty(key)) {
+				continue;
+			}
+
+			if (!msg.startsWith(key)) {
+				continue;
+			}
+
+			msgObj.content = msg.replace( new RegExp("^" + key + " ","gm"), this.invocationPattern + "/" + this.customInvocationPatterns[key] + " ");
+			return;
 		}
 	},
 
